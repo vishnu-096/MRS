@@ -236,6 +236,7 @@ class RRTStar(RRT):
                 node.cost = self.calc_new_cost(parent_node, node)
                 self.propagate_cost_to_leaves(node)
 
+    
 
 def main():
     print("Start " + __file__)

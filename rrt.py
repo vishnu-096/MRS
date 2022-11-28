@@ -253,6 +253,7 @@ class RRT:
         theta = math.atan2(dy, dx)
         return d, theta
 
+    
 
 def main(gx=6.0, gy=10.0):
     print("start " + __file__)

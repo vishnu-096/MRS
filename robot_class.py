@@ -1,11 +1,21 @@
 from map import *
 import numpy as np
 from lqr_pid import *
+from global_map import *
+import pylab as pl
+import random
+import time
+import threading
 
 class robot:
     def __init__(self, start_pos, ID, team_num) -> None:
         self.map=GridMap()
+        self.map.gmap=gmap
+        self.window_size=[6,6]
         self.map.generate_grid_map(100, 100, 0,0, [start_pos[0], start_pos[1]])
+        self.obstacle_found=False
+        
+
         self.start_position=start_pos
         self.ID=ID
         self.team_num=team_num
@@ -13,10 +23,72 @@ class robot:
         self.cur_pos=start_pos
         self.goal=[0,0]
         self.sensory_radius=10
-
+        self.obstacle_list=[]
+        self.time=0
+        # self.scanning_thread = threading.Thread(target=self.scan_for_obstacles, args=())
+        # self.scanning_thread.start()
+        
 
     def update_goal(self, goal):
         self.goal=goal
+
+    def scan_for_obstacles(self):
+        cur_time=self.time
+        self.get_sensor_readings_and_update()
+
+        self.get_obstacles_fit()
+        try:
+            while(True):
+                # print("thread inside")
+                if cur_time-self.time>1:
+                
+                    self.get_sensor_readings_and_update()
+                    cur_time=self.time
+                    self.get_obstacles_fit()
+        except:
+            print("Ending Thread!")
+            return
+
+    def f_2(self,c):
+        """ calculate the algebraic distance between the data points and the mean circle centered at c=(xc, yc) """
+        Ri = self.calc_r(*c)
+        return Ri - Ri.mean()
+
+    def get_obstacles_fit(self):
+        
+        key_list=[]
+        for key in self.map.obstacles:
+            key_list.append(key)
+
+        key_list.sort()
+
+        for obs_key in key_list:
+            tmp_list=self.map.obstacles[obs_key]
+            print(tmp_list)
+            x=[]
+            y=[]
+            randomlist = random.sample(range(0, len(tmp_list)), min(5,len(tmp_list)))
+
+            r_sum=0
+            for tmp_x,tmp_y in tmp_list:
+                x.append(tmp_x)
+                y.append(tmp_y)
+
+            N=len(x)
+            x=np.array(x,dtype=float)
+            y=np.array(y,dtype=float)
+            xmean, ymean = x.mean(), y.mean()
+            for ind in randomlist:
+                r_sum+=math.sqrt((x[ind]-xmean)**2 + (y[ind]-ymean)**2)               
+
+            r=r_sum/len(x)
+            ind=int(obs_key-3)
+            print("helloo",ind, len(self.obstacle_list))
+            if ind < len(self.obstacle_list):
+                self.obstacle_list[ind]=[xmean,ymean,r]
+            else:
+                print("inserting!")
+                self.obstacle_list.append([xmean,ymean,r])
 
     def find_path_to_goal(self, show_animation):
         obstacle_list=[]  
@@ -29,11 +101,12 @@ class robot:
         # Set Initial parameters
         print(min_val)
         print(max_val)
+        print("obstacles:", self.obstacle_list)
         rrt_star = RRTStar(
             start=self.start_position,
             goal=self.goal,
             rand_area=[min_val, max_val],
-            obstacle_list=obstacle_list,
+            obstacle_list=self.obstacle_list,
             expand_dis=1,
             robot_radius=0.8)
         path = rrt_star.planning(animation=True)
@@ -81,9 +154,17 @@ class robot:
 
         t, x, y, yaw, v = self.do_simulation(self.path_x, self.path_y, self.path_yaw, self.path_k, sp, self.goal)
 
+    def plot_circle(self, x, y, size, color="-b"):  # pragma: no cover
+        deg = list(range(0, 360, 5))
+        deg.append(0)
+        print(x,y,size)
+        xl = [x + size * math.cos(np.deg2rad(d)) for d in deg]
+        yl = [y + size * math.sin(np.deg2rad(d)) for d in deg]
+        plt.plot(xl, yl, color)
+
     def do_simulation(self, cx, cy, cyaw, ck, speed_profile, goal):
         T = 500.0  # max simulation time
-        goal_dis = 0.3
+        goal_dis = 0.8
         stop_speed = 0.05
         show_animation=True
         print("doing sim!!")
@@ -91,7 +172,7 @@ class robot:
 
         state = State(x=cx[0], y=cy[0], yaw=cyaw[0], v=0.1)
 
-        time = 0.0
+        self.time = 0.0
         x = [state.x]
         y = [state.y]
         yaw = [state.yaw]
@@ -100,8 +181,9 @@ class robot:
 
         e, e_th = 0.0, 0.0
 
-        while T >= time:
-            print("heyy111")
+        update_iter=0
+        while T >= self.time:
+
             dl, target_ind, e, e_th, ai = lqr_speed_steering_control(
                 state, cx, cy, cyaw, ck, e, e_th, speed_profile, lqr_Q, lqr_R)
 
@@ -110,7 +192,7 @@ class robot:
             if abs(state.v) <= stop_speed:
                 target_ind += 1
 
-            time = time + dt
+            self.time = self.time + dt
 
             # check goal
             dx = state.x - goal[0]
@@ -123,12 +205,14 @@ class robot:
             y.append(state.y)
             yaw.append(state.yaw)
             v.append(state.v)
-            t.append(time)
+            t.append(self.time)
             self.cur_pos=[int(state.x), int(state.y)]
-
+            update_iter+=1
+            if update_iter%5==0:
+                self.get_sensor_readings_and_update()
+                self.get_obstacles_fit()
             if target_ind % 1 == 0 and show_animation:
                 plt.cla()
-                print("heyy")
                 # for stopping simulation with the esc key.
                 plt.gcf().canvas.mpl_connect('key_release_event',
                         lambda event: [exit(0) if event.key == 'escape' else None])
@@ -136,16 +220,29 @@ class robot:
                 plt.plot(x, y, "ob", label="trajectory")
                 plt.plot(cx[target_ind], cy[target_ind], "xg", label="target")
                 plt.axis("equal")
+                plt.xlim([0,100])
+                plt.ylim([0,100])
+                for obs in self.obstacle_list:
+                    print("hello theree!",obs)
+                    self.plot_circle(obs[0],obs[1],obs[2])
                 plt.grid(True)
                 plt.title("speed[km/h]:" + str(round(state.v * 3.6, 2))
                         + ",target index:" + str(target_ind))
                 plt.pause(0.0001)
-
+                
         return t, x, y, yaw, v
 
     def get_sensor_readings_and_update(self):
         self.map.rob_position=self.cur_pos
         self.map.get_sensor_boundary(self.sensory_radius)
+
+    def get_obstacles_inside_window(self):
+        step=self.window_size/2
+        self.get_obstacles_fit()
+        for obs in self.obstacle_list:
+            x=obs[0]
+            y=obs[1]
+            r=obs[2]
 
 
 
