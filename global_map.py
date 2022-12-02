@@ -8,6 +8,24 @@ class global_map:
         self.feature=[]
         self.obstacle_discrete_points=[]
         self.feature_discrete_points=[]
+        self.com_params={}
+
+    def fit_ellipse_over_frontier(self, frontiers_x, frontiers_y, ID):
+        x=np.array(frontiers_x, dtype=float)
+        y=np.array(frontiers_y, dtype=float)
+        N=len(x)
+        xmean, ymean = x.mean(), y.mean()
+        # print(x)
+        # print(type(xmean))
+        x -= xmean
+        y -= ymean
+        U, S, V = np.linalg.svd(np.stack((x, y)))
+        transform = np.sqrt(2/N)*U.dot(np.diag(S))   # transformation matrix
+        self.com_params[ID]=[transform, xmean, ymean]
+        # tt = np.linspace(0, 2*np.pi, 1000)
+        # circle = np.stack((np.cos(tt), np.sin(tt)))    # unit circle
+
+
 
     def draw_equi_triangle(self, point, side_l):
         N=20

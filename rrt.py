@@ -8,8 +8,10 @@ import random
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pylab as pl
 
 show_animation = True
+
 
 
 class RRT:
@@ -165,18 +167,18 @@ class RRT:
         return rnd
 
     def draw_graph(self, rnd=None):
-        plt.clf()
+        # pl.clf()
         # for stopping simulation with the esc key.
-        plt.gcf().canvas.mpl_connect(
+        pl.gcf().canvas.mpl_connect(
             'key_release_event',
             lambda event: [exit(0) if event.key == 'escape' else None])
-        if rnd is not None:
-            plt.plot(rnd.x, rnd.y, "^k")
-            if self.robot_radius > 0.0:
-                self.plot_circle(rnd.x, rnd.y, self.robot_radius, '-r')
+        # if rnd is not None:
+        #     # pl.plot(rnd.x, rnd.y, "^k")
+        #     if self.robot_radius > 0.0:
+        #         self.plot_circle(rnd.x, rnd.y, self.robot_radius, '-r')
         for node in self.node_list:
             if node.parent:
-                plt.plot(node.path_x, node.path_y, "-g")
+                pl.plot(node.path_x, node.path_y, "-g")
 
         for (ox, oy, size) in self.obstacle_list:
             self.plot_circle(ox, oy, size)
@@ -186,7 +188,7 @@ class RRT:
         # self.plot_circle(node.path.x, node.path.y, fov_r '-b')
 
         if self.play_area is not None:
-            plt.plot([self.play_area.xmin, self.play_area.xmax,
+            pl.plot([self.play_area.xmin, self.play_area.xmax,
                       self.play_area.xmax, self.play_area.xmin,
                       self.play_area.xmin],
                      [self.play_area.ymin, self.play_area.ymin,
@@ -194,12 +196,12 @@ class RRT:
                       self.play_area.ymin],
                      "-k")
 
-        plt.plot(self.start.x, self.start.y, "xr")
-        plt.plot(self.end.x, self.end.y, "xr")
-        plt.axis("equal")
-        plt.axis([self.min_rand, self.max_rand, self.min_rand, self.max_rand])
-        plt.grid(True)
-        plt.pause(0.01)
+        pl.plot(self.start.x, self.start.y, "xr")
+        pl.plot(self.end.x, self.end.y, "xr")
+        pl.axis("equal")
+        # pl.axis([self.min_rand, self.max_rand, self.min_rand, self.max_rand])
+        pl.grid(True)
+        pl.pause(0.01)
 
     @staticmethod
     def plot_circle(x, y, size, color="-b"):  # pragma: no cover
@@ -207,7 +209,7 @@ class RRT:
         deg.append(0)
         xl = [x + size * math.cos(np.deg2rad(d)) for d in deg]
         yl = [y + size * math.sin(np.deg2rad(d)) for d in deg]
-        plt.plot(xl, yl, color)
+        pl.plot(xl, yl, color)
 
     @staticmethod
     def get_nearest_node_index(node_list, rnd_node):
@@ -280,10 +282,10 @@ def main(gx=6.0, gy=10.0):
         # Draw final path
         if show_animation:
             rrt.draw_graph()
-            plt.plot([x for (x, y) in path], [y for (x, y) in path], '-r')
-            plt.grid(True)
-            plt.pause(0.01)  # Need for Mac
-            plt.show()
+            pl.plot([x for (x, y) in path], [y for (x, y) in path], '-r')
+            pl.grid(True)
+            pl.pause(0.01)  # Need for Mac
+            pl.show()
 
 
 if __name__ == '__main__':
