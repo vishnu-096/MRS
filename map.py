@@ -115,7 +115,7 @@ class GridMap:
         min_y=int(min(boundary_y))
         max_x=int(max(boundary_x))
         max_y=int(max(boundary_y))
-        self.flood_fill(min_x, min_y, 0, ROBOT_ID_OFFSET+rob_id,min_x, min_y,max_x, max_y)    
+        # self.flood_fill(min_x, min_y, 0, ROBOT_ID_OFFSET+rob_id,min_x, min_y,max_x, max_y)    
 
     def get_adjacent_cells(self, source_cell):
         cur_pos=source_cell.position

@@ -12,7 +12,7 @@ dx=True
 
 g_obstacles=[[15,16,5],[20,21,2],[30,40,4]]
 sim="nmpc"
-sim="pot"
+# sim="pot"
 
 
 r1=robot([20,25],1,1, True)
@@ -33,7 +33,7 @@ prev_pos_list=[r1.cur_pos, r2.cur_pos]
 # r1.map.display_robot_map()
 
 display_local_maps=False
-
+# display_local_maps=True
 def get_distance(pos1, pos2):
     return np.sqrt((pos1[0]-pos2[0])**2 + (pos1[1]-pos2[1])**2)
 
@@ -63,25 +63,25 @@ def execute_simulation(rob1, rob2):
     rand=random.sample(range(0, len(rob1.map.frontiers)), 1)        
     rob1.update_goal(rob1.map.frontiers[rand[0]])
     rob1.update_goal(rob2.cur_pos)
-    rob1.find_path_to_goal(True)
+    # rob1.find_path_to_goal(True)
     end_flag=False
     if display_local_maps:
         pl.subplot(131)
     else:
         pl.figure()
     pl.axis([0,100,0,100])
-    pl.plot(rob1.path_x, rob1.path_y,'-k')
-    print(" robot 1 path x:", rob1.path_x)
-    print(" robot 1 path y:", rob1.path_y)
+    # pl.plot(rob1.path_x, rob1.path_y,'-k')
+    # print(" robot 1 path x:", rob1.path_x)
+    # print(" robot 1 path y:", rob1.path_y)
     # plt.show()
     rand=random.sample(range(0, len(rob2.map.frontiers)), 1)        
     rob2.update_goal(rob2.map.frontiers[rand[0]])
     rob2.update_goal(rob1.cur_pos)
     # plt.show()
-    rob2.find_path_to_goal(True)
-    pl.plot(rob2.path_x, rob2.path_y, '-g')
-    print(" robot 2 path x:", rob2.path_x)
-    print(" robot 2 path y:", rob2.path_y)
+    # rob2.find_path_to_goal(True)
+    # pl.plot(rob2.path_x, rob2.path_y, '-g')
+    # print(" robot 2 path x:", rob2.path_x)
+    # print(" robot 2 path y:", rob2.path_y)
 
     plt.pause(1)
     t=0
@@ -104,11 +104,37 @@ def execute_simulation(rob1, rob2):
                     if int(get_distance(main_rob.cur_pos, r.cur_pos))<50:
                         robots[iter].other_rob_pos[r.ID]=r.cur_pos
         if not rob1.reached_goal:
-            rob1.drive_along_path()
+            if not (sim=="nmpc"):
+                rob1.drive_along_path()
+            else:
+                rob1.other_rob_pos[rob2.ID]=[rob2.state[0], rob2.state[1],rob2.state[2], rob2.state[3]]
+                rob1.simulate()
         if not rob2.reached_goal:
-            rob2.drive_along_path()    
+            if not (sim=="nmpc"):
+
+                rob2.drive_along_path()
+            else:
+                rob2.other_rob_pos[rob1.ID]=[rob1.state[0], rob1.state[1],rob1.state[2], rob1.state[3]]
+                rob2.simulate()    
         if rob1.reached_goal and rob2.reached_goal:
             break
+        
+        if sim=="nmpc":
+            if t%2==0:
+                if display_local_maps:
+                    pl.subplot(131)
+                    pl.cla()
+                    pl.axis([0,100,0,100])
+                for ob in g_obstacles:
+                    plot_circle(ob[0], ob[1], ob[2])
+
+                print("sim step", rob1.time)
+                # print("Other robot positions :",rob1.other_rob_pos)
+                pos=rob1.other_rob_pos[rob2.ID]
+                pl.plot(rob1.state[0], rob1.state[1],'ob')
+                pl.plot(rob2.state[0], rob2.state[1],'oc')
+                plt.pause(0.5)
+
         if t%20==0:
             if display_local_maps:
                 pl.subplot(131)
@@ -157,8 +183,12 @@ def execute_simulation(rob1, rob2):
                     rob2.map.display_robot_map()
                     pl.pause(0.5)
                 prev_pos_list=cur_pos_list
-
-
+    pl.figure()
+    pl.subplot(1,2,1)
+    rob1.map.display_robot_map()
+    pl.subplot(1,2,2)
+    rob2.map.display_robot_map()
+    pl.show()
 execute_simulation(r1, r2)
 
 

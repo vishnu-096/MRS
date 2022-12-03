@@ -43,7 +43,7 @@ class robot:
         self.sensory_radius=10
         self.obstacle_list=[]
         self.time=0
-        self.state=None
+        self.state=[self.cur_pos[0], self.cur_pos[1], 0, 0]
         self.simultaneous_plot=simultaneous_plot
         self.reached_goal=False
 
@@ -51,6 +51,8 @@ class robot:
         self.path_y=[]
         self.path_k=[]
         self.path_yaw=[]
+        self.other_rob_pos={}
+
         # self.scanning_thread = threading.Thread(target=self.scan_for_obstacles, args=())
         # self.scanning_thread.start()
         
@@ -190,7 +192,7 @@ class robot:
         self.path_y=cy
         self.path_yaw=cyaw
         self.path_k=ck
-        self.other_rob_pos={}
+
     
     def drive_along_path(self):
         target_speed = 10.0 / 3.6  # simulation parameter km/h -> m/s
@@ -202,24 +204,28 @@ class robot:
     def simulate(self):
 
         start = np.array([self.state[0], self.state[1]])
-        p_desired = np.array(self.goal)
+        p_desired = np.array([self.goal[1], self.goal[0]])
         NUMBER_OF_TIMESTEPS=1
+        goal_thresh=0.2
         robot_state = start
         robot_state_history = np.empty((4, NUMBER_OF_TIMESTEPS))
+        pl.plot(self.goal[1],self.goal[0],'xk')
 
         for i in range(NUMBER_OF_TIMESTEPS):
             # predict the obstacles' position in future
             obstacle_predictions=np.zeros((len(self.other_rob_pos),4))
             ind=0
             for rob_id in self.other_rob_pos:
-                
+
                 pos=self.other_rob_pos[rob_id]
+                print("hellooo",pos, ind)
                 obstacle_predictions[ind][0] = pos[0]
                 obstacle_predictions[ind][1] = pos[1]
                 obstacle_predictions[ind][2] = pos[2]
                 obstacle_predictions[ind][3] = pos[3]         
 
                 ind+=1
+            obstacle_predictions = predict_obstacle_positions(obstacle_predictions)    
             xref = compute_xref(robot_state, p_desired,
                                 HORIZON_LENGTH, NMPC_TIMESTEP)
             # compute velocity using nmpc
@@ -228,6 +234,10 @@ class robot:
             robot_state = update_state(robot_state, vel, TIMESTEP)
             robot_state_history[:2, i] = robot_state
             self.state=[robot_state[0],robot_state[1], vel[0], vel[1]]
+            self.cur_pos=self.state[:2]
+        if np.linalg.norm(np.array([self.cur_pos[0], self.cur_pos[1]])- p_desired)<0.2:
+            self.reached_goal=True
+
 
     def plot_circle(self, x, y, size, color="-b"):  # pragma: no cover
         deg = list(range(0, 360, 5))
@@ -338,7 +348,7 @@ class robot:
 
 
     def get_sensor_readings_and_update(self):
-        self.map.rob_position=self.cur_pos
+        self.map.rob_position=[int(self.cur_pos[0]), int(self.cur_pos[1])] 
         self.map.gmap=gmap
 
         # print("other robot", self.map.gmap.grid2D[2][50] )
