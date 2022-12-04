@@ -81,7 +81,7 @@ def explore_frontier_far(rbt, allrobots, minmax):
                     minlist.append(euc_dist(rbt, x=listofindexforpoints[r] , minmax=minmax[i][j]))
                 
                 min_in_minlist = min(minlist)
-                costlist[listofindexforpoints[r]] = min_in_minlist
+                
                 try:
                     costlist[listofindexforpoints[r]] += min_in_minlist
                 except Exception:
