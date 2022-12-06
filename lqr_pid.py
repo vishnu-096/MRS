@@ -228,7 +228,8 @@ def main():
     if path is None:
         print("Cannot find path")
     else:
-        print("found path!!")
+        # print("found path!!")
+        affan = 0
 
         # Draw final path
         
@@ -243,7 +244,7 @@ def main():
             plt.plot(x_path, y_path, 'r--')
             plt.grid(True)
 
-    plt.show()
+    # plt.show()
     ax=x_path
     ay=y_path
     goal = [ax[-1], ay[-1]]
@@ -262,8 +263,8 @@ def main():
     cx= [round(num, 1) for num in cx1]
     cy= [round(num, 1) for num in cy1]
     cyaw= [round(num, 1) for num in cyaw1]
-    print(len(cx1))
-    print(len(cyaw1))
+    # print(len(cx1))
+    # print(len(cyaw1))
     # for i in range(len(cx1)):
     #     if i == (len(cx1) -1):
     #         cx.append(cx1[i])

@@ -15,25 +15,33 @@ minmaxrbt2 = [[xmin2, ymin2], [xmin2, ymax2], [xmax2, ymin2], [xmax2, ymax2]]
 minmaxrbt3 = [[xmin3, ymin3], [xmin3, ymax3], [xmax3, ymin3], [xmax3, ymax3]]
 # minmax = [minmaxrbt1, minmaxrbt2]
 minmax = [minmaxrbt1, minmaxrbt2, minmaxrbt3]
-
+# minmax = [minmaxrbt1, minmaxrbt2, minmaxrbt1, minmaxrbt2, minmaxrbt2 ]
 
 ################################
-
+bounds={}
 # Functions
 # Initializations of robots
 def multiple_robots(no_of_robots):
     list1 = []  
     for i in range(no_of_robots):
-        rbt = init_robot()
+        rbt = init_robot(i)
         list1.append(rbt)
+    for rbt in list1:
+        for r in list1:
+            if rbt.ID!=r.ID:
+                rbt.comm_and_update(r.ID)
+                temp=rbt.max_bounds[r.ID]
+                bounds[r.ID]=[[temp[0],temp[2]], [temp[0],temp[3]], [temp[1],temp[2]], [temp[1],temp[3]]]
+
     return list1 
     
-def init_robot():
+def init_robot(i):
     # x = random.randint(8,8)
     x = 10
-    y = random.randint(5,85)
+    # y = random.randint(5,85)
+    y = (i*35) % 80
     # x, y = 5,95
-    rbt = robot([x,y],1,1, False)
+    rbt = robot([x,y], i, 1)
     rbt.get_sensor_readings_and_update()
     return rbt
 
@@ -50,7 +58,7 @@ def init_robot():
 #         # y = random.randint(5,85)
 #         y = 50
 #         # x, y = 5,95
-#         rbt = robot([x,y],1,1)
+#         rbt = robot([x,y],1 ,1)
 #         rbt.get_sensor_readings_and_update()
 #         return rbt
 #     else:
@@ -164,7 +172,6 @@ def explore_frontier_far(rbt, allrobots, minmax):
                 listofindexforpoints.append(explore_frontier_random(rbt)) 
                 check = False
 
-    costfunctiondict = defaultdict()
     for i, val in enumerate(allrobots):
         if val == rbt:
             continue
@@ -173,7 +180,7 @@ def explore_frontier_far(rbt, allrobots, minmax):
                 minlist = list()
                 
                 for j in range(4):
-                    minlist.append(euc_dist(rbt, x=listofindexforpoints[r], minmax=minmax[i][j]))
+                    minlist.append(euc_dist(rbt, x=listofindexforpoints[r] , minmax=minmax[rbt.ID][j]))
                                     
                 min_in_minlist = min(minlist)
                 print("costlist in here before", costlist)
@@ -227,7 +234,7 @@ def euc_dist(rbt1, x=None, rbt2=None, minmax=None):
         return a
 
 # Robot actions
-def move_to_goal(rbt, x):
+def move_to_goal(rbt, x, robots):
     copy = rbt
     rbt.update_goal(rbt.map.frontiers[x])
     rbt.find_path_to_goal(True)
@@ -236,6 +243,15 @@ def move_to_goal(rbt, x):
         rbt.get_sensor_readings_and_update()
     except Exception:
         rbt = copy
+    
+    for r in robots:
+            if r.ID != rbt.ID:
+                rbt.comm_and_update(r.ID)
+                temp=rbt.max_bounds[r.ID]
+                bounds[r.ID]=[[temp[0],temp[2]], [temp[0],temp[3]], [temp[1],temp[2]], [temp[1],temp[3]]]
+
+                print("sth", bounds)   
+
     return True
 
 ########################################
@@ -248,7 +264,7 @@ robots = multiple_robots(3)
 # # First movement of robots
 for _ in range(2):
     for r in range(len(robots)):
-        move_to_goal(robots[r], explore_frontier_random(robots[r]))
+        move_to_goal(robots[r], explore_frontier_random(robots[r]), robots)
 
 for r in range(len(robots)):
     plt.subplot(1,len(robots),r+1) 
@@ -259,17 +275,17 @@ plt.savefig("Initialpoints.png")
 # # Exploration 
 i, p = 0, 0
 # while i < 100:
-while i < 50:
+while i < 10:
     for r in range(len(robots)):
         if p == 0:
             # move_to_goal(robots[r], explore_frontier_far(robots[r]))   
             try:
-                move_to_goal(robots[r], explore_frontier_far(robots[r], robots, minmax))   
+                move_to_goal(robots[r], explore_frontier_far(robots[r], robots, bounds), robots)   
             except Exception:
                 continue
             print("Long walk")
         else:
-            move_to_goal(robots[r], explore_frontier_closeby(robots[r]))
+            move_to_goal(robots[r], explore_frontier_closeby(robots[r]), robots)
         i += 1
         
         # condition for fast wider exploration in the beginning

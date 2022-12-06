@@ -8,7 +8,7 @@ import sys
 import matplotlib.pyplot as plt
 import pathlib
 sys.path.append(str(pathlib.Path(__file__).parent.parent))
-import pylab as pl
+
 from rrt import RRT
 from spline_not_mine import *
 
@@ -60,7 +60,7 @@ class RRTStar(RRT):
 
         self.node_list = [self.start]
         for i in range(self.max_iter):
-            print("Iter:", i, ", number of nodes:", len(self.node_list))
+            # print("Iter:", i, ", number of nodes:", len(self.node_list))
             rnd = self.get_random_node()
             nearest_ind = self.get_nearest_node_index(self.node_list, rnd)
             new_node = self.steer(self.node_list[nearest_ind], rnd,
@@ -236,7 +236,6 @@ class RRTStar(RRT):
                 node.cost = self.calc_new_cost(parent_node, node)
                 self.propagate_cost_to_leaves(node)
 
-    
 
 def main():
     print("Start " + __file__)
@@ -275,10 +274,10 @@ def main():
                     x_path.append(x)
                     y_path.append(y)
                 iter=1
-            pl.plot(x_path, y_path, 'r--')
-            pl.grid(True)
+            plt.plot(x_path, y_path, 'r--')
+            plt.grid(True)
     
-    pl.show()
+    # plt.show()
     ax=x_path
     ay=y_path
     print("X_path",ax)
@@ -293,10 +292,10 @@ def main():
     print("     ",cx1)
     print("     ",cy1)
     print("     ",cyaw1)
-    pl.figure
-    pl.plot(cx1,cy1,'-r')
-    pl.plot(ax,ay,'xb')
-    pl.show()
+    plt.figure
+    plt.plot(cx1,cy1,'-r')
+    plt.plot(ax,ay,'xb')
+    # plt.show()
 
 if __name__ == '__main__':
     main()
