@@ -114,7 +114,7 @@ class robot:
         t = [0.0]
 
         e, e_th = 0.0, 0.0
-
+        iter=0
         while T >= time:
             # print("heyy111")
             dl, target_ind, e, e_th, ai = lqr_speed_steering_control(
@@ -141,6 +141,9 @@ class robot:
             t.append(time)
             self.cur_pos=[int(state.x), int(state.y)]
 
+            if iter%75==0:
+                self.get_sensor_readings_and_update()
+            iter+=1
             # if target_ind % 1 == 0 and show_animation:
             #     plt.cla()
             #     # print("heyy")
