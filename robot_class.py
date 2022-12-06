@@ -6,7 +6,7 @@ import pylab as pl
 import random
 import time
 import threading
-import cv2
+# import cv2
 from nmpc import *
 
 ROBOT_RADIUS = 0.5

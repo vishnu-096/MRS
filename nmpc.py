@@ -1,5 +1,5 @@
-from multi_robot_plot import plot_robot_and_obstacles
-from create_obstacles import create_obstacles
+# from multi_robot_plot import plot_robot_and_obstacles
+# from create_obstacles import create_obstacles
 import numpy as np
 from scipy.optimize import minimize, Bounds
 import time
