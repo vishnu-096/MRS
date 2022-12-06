@@ -7,8 +7,11 @@ t = np.linspace(0, 2*np.pi, N)
 x = 5*np.cos(t) + 0.2*np.random.normal(size=N) + 1
 y = 4*np.sin(t+0.5) + 0.2*np.random.normal(size=N)
 plt.plot(x, y, '.')     # given points
+print(type(x))
 
 xmean, ymean = x.mean(), y.mean()
+print(type(xmean))
+
 x -= xmean
 y -= ymean
 U, S, V = np.linalg.svd(np.stack((x, y)))
@@ -23,10 +26,14 @@ print(S)
 print(xmean,ymean)
 plt.plot(xmean,ymean,'xk')
 
-a=np.sqrt(2/N)*S[0]
-b=np.sqrt(2/N)*S[1]
-t=np.linspace(0,2*np.pi,100)
-x=a*np.cos(t)
-y=b*np.sin(t)
-plt.plot(x,y,'b')
-plt.show()
+# transform = np.sqrt(2/N) * U.dot(np.diag(S))
+# a=np.sqrt(2/N)*S[0]
+# b=np.sqrt(2/N)*S[1]
+# a=transform[0]
+# b=transform[1]
+# print(transform)
+# t=np.linspace(0,2*np.pi,100)
+# x=a*np.cos(t)
+# y=b*np.sin(t)
+# plt.plot(x,y,'b')
+# plt.show()

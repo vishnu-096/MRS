@@ -43,6 +43,7 @@ class robot:
         self.sensory_radius=10
         self.obstacle_list=[]
         self.time=0
+        #change heree
         self.state=[self.cur_pos[0], self.cur_pos[1], 0, 0]
         self.simultaneous_plot=simultaneous_plot
         self.reached_goal=False
@@ -143,6 +144,7 @@ class robot:
         # print(min_val)
         # print(max_val)
         # print("obstacles:", self.obstacle_list)
+
         rrt_star = RRTStar(
             start=self.local_map_pos,
             goal=self.goal,
@@ -160,7 +162,7 @@ class robot:
             # Draw final path
             
             if show_animation:
-                print("drawing graph")
+                # print("drawing graph")
                 rrt_star.draw_graph()
                 iter=0
                 for (x,y) in path:
@@ -175,8 +177,8 @@ class robot:
             y_path.append(y)
         x_path.reverse()
         y_path.reverse()
-        print("first path_x ", x_path)
-        print("first path_y ", y_path)
+        # print("first path_x ", x_path)
+        # print("first path_y ", y_path)
         x_path=x_path[:-1]
         y_path=y_path[:-1]
         goal = [x_path[-1], y_path[-1]]
@@ -185,7 +187,7 @@ class robot:
         cx=[]
         cy=[]
         cx1, cy1, cyaw1, ck, s = calc_spline_course(
-                x_path, y_path, ds=0.5)
+                x_path, y_path, ds=1.5)
         cx= [round(num, 1) for num in cx1]
         cy= [round(num, 1) for num in cy1]
         cyaw= [round(num, 1) for num in cyaw1]
@@ -265,7 +267,7 @@ class robot:
         show_animation=not(self.simultaneous_plot)
         print("doing sim!!")
 
-
+        self.state = State(x=cx[0], y=cy[0], yaw=cyaw[0], v=0.1)
         x = [self.state.x]
         y = [self.state.y]
         yaw = [self.state.yaw]
