@@ -25,8 +25,6 @@ class global_map:
         # tt = np.linspace(0, 2*np.pi, 1000)
         # circle = np.stack((np.cos(tt), np.sin(tt)))    # unit circle
 
-
-
     def draw_equi_triangle(self, point, side_l):
         N=20
         temp1=point
@@ -92,9 +90,9 @@ class global_map:
         l2=np.round(self.feature[0][1])
         l3=np.round(self.feature[0][2])
         for ind in range(len(l1[0,:])):
-            self.grid2D[int(l1[0][ind]),int(l1[1][ind])]=4
-            self.grid2D[int(l2[0][ind]),int(l2[1][ind])]=4
-            self.grid2D[int(l3[0][ind]),int(l3[1][ind])]=4
+            self.grid2D[int(l1[0][ind]),int(l1[1][ind])]=20
+            self.grid2D[int(l2[0][ind]),int(l2[1][ind])]=20
+            self.grid2D[int(l3[0][ind]),int(l3[1][ind])]=20
 
 
     def display_grid_map(self):

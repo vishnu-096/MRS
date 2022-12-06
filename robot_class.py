@@ -52,6 +52,7 @@ class robot:
         self.path_k=[]
         self.path_yaw=[]
         self.other_rob_pos={}
+        self.max_bounds={}
 
         # self.scanning_thread = threading.Thread(target=self.scan_for_obstacles, args=())
         # self.scanning_thread.start()
@@ -213,7 +214,7 @@ class robot:
 
         for i in range(NUMBER_OF_TIMESTEPS):
             # predict the obstacles' position in future
-            obstacle_predictions=np.zeros((len(self.other_rob_pos),4))
+            obstacle_predictions=np.zeros((len(self.other_rob_pos)+len(self.obstacle_list),4))
             ind=0
             for rob_id in self.other_rob_pos:
 
@@ -224,6 +225,15 @@ class robot:
                 obstacle_predictions[ind][2] = pos[2]
                 obstacle_predictions[ind][3] = pos[3]         
 
+                ind+=1
+            ob_iter=0
+            if ind==0:
+                ind=1
+            for ob in self.obstacle_list:
+                obstacle_predictions[ind-1][0]=ob[0]
+                obstacle_predictions[ind-1][1]=ob[1]
+                obstacle_predictions[ind-1][2]=0
+                obstacle_predictions[ind-1][3]=0
                 ind+=1
             obstacle_predictions = predict_obstacle_positions(obstacle_predictions)    
             xref = compute_xref(robot_state, p_desired,
@@ -344,7 +354,8 @@ class robot:
             pl.plot(fit_x, fit_y,color)
             cv2.waitKey(0)
             pl.pause(4)
-        self.map.map_fill_boundary(fit_x, fit_y, robo_ID)
+        xmin,xmax,ymin, ymax=self.map.map_fill_boundary(fit_x, fit_y, robo_ID)
+        self.max_bounds[robo_ID]=[xmin,xmax,ymin, ymax]
 
 
     def get_sensor_readings_and_update(self):
@@ -353,6 +364,12 @@ class robot:
 
         # print("other robot", self.map.gmap.grid2D[2][50] )
         self.map.get_sensor_boundary(self.sensory_radius)
+        self.map.gmap.fit_ellipse_over_frontier(self.map.frontiers_x, self.map.frontiers_y, self.ID)
+
+        if self.map.object_found:
+            return True
+        else:
+            False
 
     def get_obstacles_inside_window(self):
         step=self.window_size/2

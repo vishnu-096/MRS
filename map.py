@@ -28,6 +28,7 @@ class GridMap:
         self.frontiers_x=[]
         self.frontiers_y=[]
         self.obstacles={}
+        self.object_found=False
 
     def generate_grid_map(self,rows, cols, num_obstacles, size_obstacles, rob_start_pos):
         self.grid_map=[]
@@ -104,17 +105,20 @@ class GridMap:
         self.flood_fill(x, y-1, old, new, min_x, min_y,max_x, max_y)
 
     def map_fill_boundary(self, boundary_x, boundary_y, rob_id):
+        
         for iter in range(len(boundary_x)):
             row=int(np.round(boundary_x[iter]))
             col=int(np.round(boundary_y[iter]))
-
+            if (row>=0 and row<100) and (col>=0 and col<100):
             # print("gfrsessdfgj",row, col)
-            self.grid2D[row][col]=ROBOT_ID_OFFSET+rob_id
+                self.grid2D[row][col]=ROBOT_ID_OFFSET+rob_id
 
         min_x=int(min(boundary_x))
         min_y=int(min(boundary_y))
         max_x=int(max(boundary_x))
         max_y=int(max(boundary_y))
+
+        return min_x,max_x, min_y, max_y
         # self.flood_fill(min_x, min_y, 0, ROBOT_ID_OFFSET+rob_id,min_x, min_y,max_x, max_y)    
 
     def get_adjacent_cells(self, source_cell):
@@ -203,8 +207,10 @@ class GridMap:
                         else:
                             self.obstacles[obs_temp]=[]
                             self.obstacles[obs_temp].append([row_iter,col_iter1])
-                            
                         self.grid2D[row_iter][col_iter1]=3
+                        if obs_temp==20:
+                            self.grid2D[row_iter][col_iter1]=4
+                            self.object_found=True
                     else:
                         self.grid2D[row_iter][col_iter1]=1
 
@@ -242,6 +248,10 @@ class GridMap:
                             self.obstacles[obs_temp].append([row_iter,col_iter2])
 
                         self.grid2D[row_iter][col_iter2]=3
+
+                        if obs_temp==20:
+                            self.grid2D[row_iter][col_iter2]=4
+                            self.object_found=True
                     else: 
                         self.grid2D[row_iter][col_iter2]=1
 
@@ -267,6 +277,10 @@ class GridMap:
                             self.obstacles[obs_temp].append([row_iter1,rob_c])
 
                         self.grid2D[row_iter1][rob_c]=3
+                        if obs_temp==20:
+                            self.grid2D[row_iter1][rob_c]=4
+                            self.object_found=True
+
                     else:
                         self.grid2D[row_iter1][rob_c]=1
                     row_iter=row_iter1
@@ -289,6 +303,10 @@ class GridMap:
                             self.obstacles[obs_temp].append([row_iter2,rob_c])
 
                         self.grid2D[row_iter2][rob_c]=3
+                        if obs_temp==20:
+                            self.grid2D[row_iter2][rob_c]=4
+                            self.object_found=True
+
                     else:
                             self.grid2D[row_iter2][rob_c]=1
                     row_iter=row_iter2
