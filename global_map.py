@@ -94,6 +94,6 @@ class global_map:
 gmap=global_map([100,100])
 g_obstacles=[[15,16,5],[20,21,2],[30,40,4]]
 gmap.create_obstacles(g_obstacles)
-gmap.draw_equi_triangle([40,45],5)
+gmap.draw_equi_triangle([80,80],3)
 gmap.discretize_features()
 # gmap.display_grid_map()

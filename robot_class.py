@@ -168,5 +168,8 @@ class robot:
         # print("other robot", self.map.gmap.grid2D[2][50] )
         self.map.get_sensor_boundary(self.sensory_radius)
         self.map.gmap.fit_ellipse_over_frontier(self.map.frontiers_x, self.map.frontiers_y, self.ID)
-
+        if self.map.object_found:
+            return True
+        else:
+            False
 

@@ -3,6 +3,8 @@ import random
 import math
 from collections import defaultdict
 
+object_found=False
+
 # Functions
 # Initializations of robots
 def multiple_robots(no_of_robots):
@@ -113,6 +115,7 @@ def euc_dist(rbt1=None, x=None, minmax=None, m_x=None, m_y=None, map=None):
 
 # Robot actions
 def move_to_goal(rbt, robots, x=None, farpoint=None):
+    global object_found
     copy = rbt
     if farpoint is None:
         rbt.update_goal(rbt.map.frontiers[x])
@@ -122,7 +125,9 @@ def move_to_goal(rbt, robots, x=None, farpoint=None):
     rbt.find_path_to_goal(True)
     try:
         rbt.drive_along_path()
-        rbt.get_sensor_readings_and_update()
+        if rbt.get_sensor_readings_and_update():
+            print("Found GOAL FEATURE! ")
+            object_found=True
     except Exception:
         rbt = copy
     
@@ -155,17 +160,22 @@ plt.savefig("Initialpoints.png")
 
 # # Exploration 
 i, p = 0, 0
-while i < 50:
+while i < 50 and (not object_found):
 # while i < 30:
     for r in range(len(robots)):
         if p == 0:
             try:
                 move_to_goal(robots[r], robots, farpoint=explore_frontier_far(robots[r], robots, bounds))   
+                if object_found:
+                    print("Stoping exploration as goal is found!")
+                    break
             except Exception:
                 continue
         else:
             move_to_goal(robots[r], robots, x=explore_frontier_closeby(robots[r]))
-        
+            if object_found:
+                print("Stoping exploration as goal is found!")
+                break
         i += 1
         
         # condition for fast wider exploration in the beginning
