@@ -282,7 +282,7 @@ def main(gx=6.0, gy=10.0):
             plt.plot([x for (x, y) in path], [y for (x, y) in path], '-r')
             plt.grid(True)
             plt.pause(0.01)  # Need for Mac
-            plt.show()
+            # plt.show()
 
 
 if __name__ == '__main__':

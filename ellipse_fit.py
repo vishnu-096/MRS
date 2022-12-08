@@ -18,9 +18,9 @@ circle = np.stack((np.cos(tt), np.sin(tt)))    # unit circle
 transform = np.sqrt(2/N) * U.dot(np.diag(S))   # transformation matrix
 fit = transform.dot(circle) + np.array([[xmean], [ymean]])
 plt.plot(fit[0, :], fit[1, :], 'r')
-print(np.sqrt(2/N) * U.dot(np.diag(S)))
-print(S)
-print(xmean,ymean)
+# print(np.sqrt(2/N) * U.dot(np.diag(S)))
+# print(S)
+# print(xmean,ymean)
 plt.plot(xmean,ymean,'xk')
 
 a=np.sqrt(2/N)*S[0]

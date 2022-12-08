@@ -60,7 +60,7 @@ class RRTStar(RRT):
 
         self.node_list = [self.start]
         for i in range(self.max_iter):
-            print("Iter:", i, ", number of nodes:", len(self.node_list))
+            # print("Iter:", i, ", number of nodes:", len(self.node_list))
             rnd = self.get_random_node()
             nearest_ind = self.get_nearest_node_index(self.node_list, rnd)
             new_node = self.steer(self.node_list[nearest_ind], rnd,
@@ -277,7 +277,7 @@ def main():
             plt.plot(x_path, y_path, 'r--')
             plt.grid(True)
     
-    plt.show()
+    # plt.show()
     ax=x_path
     ay=y_path
     print("X_path",ax)
@@ -295,7 +295,7 @@ def main():
     plt.figure
     plt.plot(cx1,cy1,'-r')
     plt.plot(ax,ay,'xb')
-    plt.show()
+    # plt.show()
 
 if __name__ == '__main__':
     main()

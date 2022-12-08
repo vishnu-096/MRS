@@ -1,6 +1,10 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from global_map import *
+
+
+ROBOT_ID_OFFSET = 10
 
 class grid_cell:
     def __init__(self):
@@ -13,14 +17,43 @@ class grid_cell:
 
 class GridMap:
     def __init__(self):
+        # self.grid_map=[]
+        # self.grid2D=[]
+        # self.max_rows=0
+        # self.max_cols=0
+        # self.rob_position=[0,0]
+        # self.frontiers=[]
+        # self.frontiers_x=[]
+        # self.frontiers_y=[]
+
+
         self.grid_map=[]
         self.grid2D=[]
+        self.gmap=gmap
         self.max_rows=0
         self.max_cols=0
         self.rob_position=[0,0]
         self.frontiers=[]
         self.frontiers_x=[]
         self.frontiers_y=[]
+        self.obstacles={}
+        self.object_found=False
+        self.object_pnt_count=0
+        
+
+
+    def map_fill_boundary(self, boundary_x, boundary_y, rob_id):
+        for iter in range(len(boundary_x)):
+            row=int(np.round(boundary_x[iter]))
+            col=int(np.round(boundary_y[iter]))
+            # if (row>=0 and row<100) and (col>=0 and col<100):
+            # print("gfrsessdfgj",row, col)
+                # self.grid2D[row][col]=ROBOT_ID_OFFSET+rob_id
+        min_x=int(min(boundary_x))
+        min_y=int(min(boundary_y))
+        max_x=int(max(boundary_x))
+        max_y=int(max(boundary_y))
+        return min_x,max_x, min_y, max_y
 
     def generate_grid_map(self,rows, cols, num_obstacles, size_obstacles, rob_start_pos):
         self.grid_map=[]
@@ -137,16 +170,16 @@ class GridMap:
             if row_iter2>=self.max_rows-1:
                 stop_vert_scan2=True
                 stop_hor_scan2=True
-                print("limits reached!")
+                # print("limits reached!")
 
             while not (stop_hor_scan1 and stop_hor_scan2) :
                 if not stop_hor_scan1:
-                    
                     col_iter1+=1
                     if col_iter1<=0 or col_iter1>=self.max_cols-1:
                         stop_hor_scan1=True
 
                     dist=math.sqrt((rob_r-row_iter)**2+(rob_c-col_iter1)**2) 
+     
 
                     if thickness_cnt1:
                         if self.grid2D[row_iter][col_iter1]==0:
@@ -161,8 +194,27 @@ class GridMap:
 
                     if self.grid2D[row_iter][col_iter1]==2:
                         self.frontiers.remove([row_iter,col_iter1])
-                    self.grid2D[row_iter][col_iter1]=1
+                    
+                    obs_temp=self.gmap.grid2D[row_iter][col_iter1]
+                    if obs_temp>2:
+                        # print("found obstacle ", obs_temp)
+                        if obs_temp in self.obstacles:
+                            self.obstacles[obs_temp].append([row_iter,col_iter1])
+                        else:
+                            self.obstacles[obs_temp]=[]
+                            self.obstacles[obs_temp].append([row_iter,col_iter1])
+                        self.grid2D[row_iter][col_iter1]=3
+                        if obs_temp==20:
+                            self.grid2D[row_iter][col_iter1]=5
+                            self.object_pnt_count+=1
                         
+                        
+                    else:
+                        self.grid2D[row_iter][col_iter1]=1
+                    
+                    if self.object_pnt_count>5:
+                        self.object_found=True
+
                 if not stop_hor_scan2:                    
                     col_iter2-=1
                     if col_iter2<=0 or col_iter2>=self.max_cols-1:
@@ -181,12 +233,30 @@ class GridMap:
 
                     if dist> radius:
                         r_reached_col2=True
-                        print("exceeded radius C left")
+                        # print("exceeded radius C left")
                         thickness_cnt2+=1
                     
                     if self.grid2D[row_iter][col_iter2]==2:
                         self.frontiers.remove([row_iter,col_iter2])
-                    self.grid2D[row_iter][col_iter2]=1
+
+                    obs_temp=self.gmap.grid2D[row_iter][col_iter2]
+                    if obs_temp>2:
+                        # print("found obstacle ", obs_temp)
+                        if obs_temp in self.obstacles:
+                            self.obstacles[obs_temp].append([row_iter,col_iter2])
+                        else:
+                            self.obstacles[obs_temp]=[]
+                            self.obstacles[obs_temp].append([row_iter,col_iter2])
+
+                        self.grid2D[row_iter][col_iter2]=3
+
+                        if obs_temp==20:
+                            self.grid2D[row_iter][col_iter2]=5
+                            self.object_pnt_count+=1
+                    else: 
+                        self.grid2D[row_iter][col_iter2]=1
+                    if self.object_pnt_count>5:
+                        self.object_found=True
 
 
             #outer loop
@@ -199,8 +269,28 @@ class GridMap:
                     if dist>radius:
                         stop_vert_scan1=True
                         break
-                    self.grid2D[row_iter1][rob_c]=1
+                    obs_temp=self.gmap.grid2D[row_iter1][rob_c]
+                    if obs_temp>2:
+                        # print("found obstacle ", obs_temp)
+
+                        if obs_temp in self.obstacles:
+                            self.obstacles[obs_temp].append([row_iter1,rob_c])
+                        else:
+                            self.obstacles[obs_temp]=[]
+                            self.obstacles[obs_temp].append([row_iter1,rob_c])
+
+                        self.grid2D[row_iter1][rob_c]=3
+                        if obs_temp==20:
+                            self.grid2D[row_iter1][rob_c]=5
+                            self.object_pnt_count+=1
+
+                    else:
+                        self.grid2D[row_iter1][rob_c]=1
                     row_iter=row_iter1
+
+                    if self.object_pnt_count>5:
+                        self.object_found=True
+
             else:
                 row_iter2=row_iter2+1
                 if not stop_vert_scan2:
@@ -210,25 +300,41 @@ class GridMap:
                     if dist>radius:
                         stop_vert_scan2=True
                         break
-                    self.grid2D[row_iter2][rob_c]=1
+                    obs_temp=self.gmap.grid2D[row_iter2][rob_c]
+                    if obs_temp>2:
+                        # print("found obstacle 4")
+                        if obs_temp in self.obstacles:
+                            self.obstacles[obs_temp].append([row_iter2,rob_c])
+                        else:
+                            self.obstacles[obs_temp]=[]
+                            self.obstacles[obs_temp].append([row_iter2,rob_c])
+
+                        self.grid2D[row_iter2][rob_c]=3
+                        if obs_temp==20:
+                            self.grid2D[row_iter2][rob_c]=5
+                            self.object_pnt_count+=1
+
+                    else:
+                            self.grid2D[row_iter2][rob_c]=1
                     row_iter=row_iter2
         
         for iter in range(len(self.frontiers)):
-            self.frontiers_x.append(map.frontiers[iter][0])
-            self.frontiers_y.append(map.frontiers[iter][1])
+            self.frontiers_x.append(self.frontiers[iter][0])
+            self.frontiers_y.append(self.frontiers[iter][1])
         self.cur_map_bound=[[min(self.frontiers_x), min(self.frontiers_y)],
          [max(self.frontiers_x), max(self.frontiers_y)]]
 
         return 
 
+
     def display_robot_map(self):
         for iter in range(len(self.frontiers)):
             self.grid2D[self.frontiers[iter][0]][self.frontiers[iter][1]]=2
         
-        plt.close()
+        # plt.close()
         plt.imshow(list(self.grid2D))
-        plt.show()
-        plt.pause(5)
+        # plt.show()
+        # plt.pause(5)
 
 # plt.imshow(list(map.grid2D))       
 map=GridMap()
