@@ -1,4 +1,4 @@
-from multi_robot_plot import plot_robot_and_obstacles
+# from multi_robot_plot import plot_robot_and_obstacles
 from create_obstacles import create_obstacles
 import numpy as np
 from scipy.optimize import minimize, Bounds
@@ -7,12 +7,12 @@ import time
 SIM_TIME = 15.
 TIMESTEP = 0.1
 NUMBER_OF_TIMESTEPS = int(SIM_TIME/TIMESTEP)
-ROBOT_RADIUS = 0.5
+ROBOT_RADIUS = 1.5
 VMAX = 2
 VMIN = 0.1
 
 # collision cost parameters
-Qc = 5.
+Qc = 6.
 kappa = 4.
 
 # nmpc parameters

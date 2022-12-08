@@ -146,7 +146,12 @@ class GridMap:
     def get_sensor_boundary(self, radius):
         rob_r=self.rob_position[0]
         rob_c=self.rob_position[1]
-                
+        
+        noise = np.random.normal(0,2,2)
+
+        rob_r=int(rob_r+noise[0])
+        rob_r=int(rob_r+noise[1])  
+
         row_iter1=rob_r
         row_iter2=rob_r
         row_iter=rob_r
