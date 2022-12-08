@@ -9,7 +9,7 @@ import threading
 import cv2
 from nmpc import *
 
-ROBOT_RADIUS = 0.5
+ROBOT_RADIUS = 1.5
 VMAX = 2
 VMIN = 0.1
 
@@ -207,14 +207,14 @@ class robot:
         start = np.array([self.state[0], self.state[1]])
         p_desired = np.array([self.goal[1], self.goal[0]])
         NUMBER_OF_TIMESTEPS=1
-        goal_thresh=0.2
+        goal_thresh=0.5
         robot_state = start
         robot_state_history = np.empty((4, NUMBER_OF_TIMESTEPS))
         pl.plot(self.goal[1],self.goal[0],'xk')
 
         for i in range(NUMBER_OF_TIMESTEPS):
             # predict the obstacles' position in future
-            obstacle_predictions=np.zeros((len(self.other_rob_pos)+len(self.obstacle_list),4))
+            obstacle_predictions=np.zeros((len(self.other_rob_pos),4))
             ind=0
             for rob_id in self.other_rob_pos:
 
@@ -226,15 +226,15 @@ class robot:
                 obstacle_predictions[ind][3] = pos[3]         
 
                 ind+=1
-            ob_iter=0
-            if ind==0:
-                ind=1
-            for ob in self.obstacle_list:
-                obstacle_predictions[ind-1][0]=ob[0]
-                obstacle_predictions[ind-1][1]=ob[1]
-                obstacle_predictions[ind-1][2]=0
-                obstacle_predictions[ind-1][3]=0
-                ind+=1
+            # ob_iter=0
+            # if ind==0:
+            #     ind=1
+            # for ob in self.obstacle_list:
+            #     obstacle_predictions[ind-1][0]=ob[0]
+            #     obstacle_predictions[ind-1][1]=ob[1]
+            #     obstacle_predictions[ind-1][2]=0
+            #     obstacle_predictions[ind-1][3]=0
+            #     ind+=1
             obstacle_predictions = predict_obstacle_positions(obstacle_predictions)    
             xref = compute_xref(robot_state, p_desired,
                                 HORIZON_LENGTH, NMPC_TIMESTEP)
